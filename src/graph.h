@@ -3,10 +3,9 @@
 #include <vector>
 #include <string>
 #include <utility>
-
 using namespace std;
 
-class Graph {
+class Graph{
 private:
     int nodeCount;
     vector<vector<pair<int,int>>> adj;
