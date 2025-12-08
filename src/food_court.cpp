@@ -1,8 +1,10 @@
 #include "food_court.h"
+#include "mainZone.h"
+#include <cmath>
 
 FoodCourt::FoodCourt() : graph(10) {
     bg = LoadTexture("src/graphics/foodcourt.png");
-    
+
     graph.addNode("Entrance");
     graph.addNode("PizzaParadise");
     graph.addNode("FootballGround");
@@ -71,14 +73,38 @@ FoodCourt::FoodCourt() : graph(10) {
 }
 
 FoodCourt::~FoodCourt() {
-    if(bg.id != 0) UnloadTexture(bg);
+    if (bg.id != 0) UnloadTexture(bg);
 }
 
-void FoodCourt::update() {
+void FoodCourt::update(MainZone& mz) {
     // Exit Button Logic
     if (CheckCollisionPointRec(GetMousePosition(), exitBtnRect)) {
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             exitClicked = true;
+        }
+    }
+
+    // Node Click Logic
+    if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+        for (auto &[name, pos] : nodePos) {
+            if (CheckCollisionPointCircle(GetMousePosition(), pos, 20)) {
+                if (name != "Entrance") {
+                    PathResult r = findShortestPath(graph, "Entrance", name);
+                    if (r.distance != -1) {
+                        distance = r.distance;
+                        walkingTime = (float)distance / 1.0f / 3.0f; // Mins
+                        targetName = name;
+                        currentPath = r.path;
+                        showInfo = true;
+
+                        // Push to Main Stack
+                        mz.pushExternalHistory(name, (float)distance, walkingTime);
+
+                        // Instant Traversal
+                        vehiclePos = nodePos[name];
+                    }
+                }
+            }
         }
     }
 }
@@ -86,37 +112,47 @@ void FoodCourt::update() {
 void FoodCourt::draw() {
     DrawTexture(bg, 0, 0, WHITE);
 
-    // Edges are hidden but exist in graph for Dijkstra
-    /*
-    const auto& adjList = graph.getAdjacencyList();
-    for(auto &pair : adjList){
-        string u = pair.first;
-        if(!nodePos.count(u)) continue;
-        for(auto &neighbor : pair.second){
-            string v = neighbor.first;
-            if(nodePos.count(v) && u < v){
-                DrawLineEx(nodePos[u], nodePos[v], 3, RED);
+
+    for (auto &[name, pos] : nodePos) {
+        DrawCircleV(pos, 5, RED);
+
+        // Text: Boldish (Shadow) + Bigger
+        int fontSize = 16;
+        int textX = pos.x - MeasureText(name.c_str(), fontSize) / 2;
+        int textY = pos.y - 25;
+
+        // Shadow/Outline for readability (White halo)
+        DrawText(name.c_str(), textX + 1, textY + 1, fontSize, WHITE);
+        DrawText(name.c_str(), textX - 1, textY - 1, fontSize, WHITE);
+        DrawText(name.c_str(), textX + 1, textY - 1, fontSize, WHITE);
+        DrawText(name.c_str(), textX - 1, textY + 1, fontSize, WHITE);
+
+        // Main Text
+        DrawText(name.c_str(), textX, textY, fontSize, BLACK);
+    }
+
+    // Draw Path Highlight
+    if (!currentPath.empty()) {
+        for (size_t i = 0; i < currentPath.size() - 1; i++) {
+            if (nodePos.count(currentPath[i]) && nodePos.count(currentPath[i + 1])) {
+                DrawLineEx(nodePos[currentPath[i]], nodePos[currentPath[i + 1]], 6, LIME);
             }
         }
     }
-    */
 
-    for(auto &[name, pos] : nodePos) {
-        DrawCircleV(pos, 5, RED);
-        
-        // Aesthetic Text: Boldish (Shadow) + Bigger
-        int fontSize = 16;
-        int textX = pos.x - MeasureText(name.c_str(), fontSize)/2;
-        int textY = pos.y - 25;
-        
-        // Shadow/Outline for readability (White halo)
-        DrawText(name.c_str(), textX+1, textY+1, fontSize, WHITE);
-        DrawText(name.c_str(), textX-1, textY-1, fontSize, WHITE);
-        DrawText(name.c_str(), textX+1, textY-1, fontSize, WHITE);
-        DrawText(name.c_str(), textX-1, textY+1, fontSize, WHITE);
-        
-        // Main Text
-        DrawText(name.c_str(), textX, textY, fontSize, BLACK);
+    // Draw Info Box
+    if (showInfo) {
+        int w = 250, h = 100;
+        int x = GetScreenWidth() - w - 20, y = GetScreenHeight() - h - 20;
+        DrawRectangle(x, y, w, h, Fade(SKYBLUE, 0.9f));
+        DrawRectangleLines(x, y, w, h, DARKBLUE);
+
+        DrawText("TARGET INFO", x + 10, y + 10, 24, DARKBLUE);
+        DrawText(("To: " + targetName).c_str(), x + 10, y + 35, 18, BLACK);
+        DrawText(("Dist: " + to_string(distance) + " m").c_str(), x + 10, y + 55, 22, BLACK);
+
+        string tStr = (walkingTime < 1.0f) ? "< 1 min" : to_string((int)ceil(walkingTime)) + " mins";
+        DrawText(("Time: " + tStr).c_str(), x + 10, y + 75, 22, DARKGREEN);
     }
 
     // Draw Exit Button
