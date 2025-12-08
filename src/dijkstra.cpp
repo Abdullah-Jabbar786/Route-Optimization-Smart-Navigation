@@ -31,11 +31,22 @@ PathResult findShortestPath(const Graph& g, const string& start, const string& e
         }
     }
 
-    if(dist[end] == numeric_limits<int>::max()){ result.distance = -1; return result; }
+    if(dist.find(end) == dist.end() || dist[end] == numeric_limits<int>::max()){ result.distance = -1; return result; }
 
     result.distance = dist[end];
     string cur = end;
-    while(cur != start){ result.path.push_back(cur); cur = prev[cur]; }
+    int safety = 0;
+    while(cur != start){ 
+        result.path.push_back(cur); 
+        if(prev.find(cur) == prev.end()) {
+             // Path broken
+             result.distance = -1; 
+             result.path.clear();
+             return result;
+        }
+        cur = prev[cur];
+        if(++safety > (int)adjList.size() + 100) break; // Emergency break
+    }
     result.path.push_back(start);
     reverse(result.path.begin(), result.path.end());
     return result;
