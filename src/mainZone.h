@@ -3,11 +3,20 @@
 #include <unordered_map>
 #include <vector>
 #include <string>
+#include <stack> 
 #include "graph.h"
 #include "dijkstra.h"
 #include "astar.h"
 
 using namespace std;
+
+// Stack for Travel History
+struct TravelState {
+    string placeName;
+    float cumulativeDistance;
+    float cumulativeTime;
+    int depth; // 0=Root(Entrance), 1=MainNodes, 2=SubNodes
+};
 
 class MainZone{
 public:
@@ -17,6 +26,9 @@ public:
     bool isLoadingComplete() const { return loadingComplete; }
     string getEnteredSubMap() const { return enteringSubmap; }
     void resetLoading();
+    Vector2 getVehiclePos() const { return vehiclePos; }
+    vector<TravelState> getTravelHistory() const;
+    void pushExternalHistory(string place, float distDelta, float timeDelta);
 
 private:
     bool loadingComplete = false;
@@ -31,7 +43,7 @@ private:
     vector<string> currentPath;
     int pathIndex = 0;
     int travelDistance = 0;
-    float vehicleSpeedUnitsPerFrame = 2.5f;
+    float vehicleSpeedUnitsPerFrame = 5.0f;
     float timeTaken = 0.0f;
     bool vehicleMoving = false;
     Vector2 vehiclePos = {0,0};
@@ -43,14 +55,14 @@ private:
     bool showLoading = false;
     int loadingTimer = 0;
     const int loadingDuration = 180;
-    int postLoadingTimer = 0; // Delay after loading bar fills
+    int postLoadingTimer = 0; 
     string enteringSubmap = "";
     
     // Teleport Delay Logic
     bool waitingForTeleport = false;
     int teleportDelayTimer = 0;
     
-    // Aesthetic Loading State
+    // Loading State
     float loadingAlpha = 0.0f;
     float loadingBarWidth = 0.0f;
     string loadingStatusText = "";
@@ -58,6 +70,9 @@ private:
 
     unordered_map<string, Vector2> nodePos;
     Graph graph;
+
+    // Travel History Stack
+    stack<TravelState> historyStack;
 
     void updateSearchBar();
     void drawSearchBar();
