@@ -137,7 +137,7 @@ void MainZone::startNavigation(string target) {
     if (r.distance != -1 && r.path.size() > 1) {
         currentPath = r.path;
         travelDistance = r.distance;
-        // Estimate Time (1 unit = 0.5 mins)
+        
         timeTaken = travelDistance * 0.5f; 
         
         targetNode = target;
