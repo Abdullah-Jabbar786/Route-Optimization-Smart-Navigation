@@ -4,39 +4,29 @@
 
 using namespace std;
 
-BuildingReport::BuildingReport() 
-{
+BuildingReport::BuildingReport(){
     root = new ReportNode("Root", true);
 }
 
-BuildingReport::~BuildingReport() 
-{
+BuildingReport::~BuildingReport(){
     delete root;
 }
 
-ReportNode* BuildingReport::findCategory(string category) 
-{
-    for (auto child : root->children) 
-    {
-        if (child->isCategory && child->name == category) 
-        {
-            return child;
-        }
+ReportNode* BuildingReport::findCategory(string category){
+    for (auto child : root->children){
+        if (child->isCategory && child->name == category) return child;
     }
     return nullptr;
 }
 
-void BuildingReport::insert(string category, string buildingName)
-{
+void BuildingReport::insert(string category, string buildingName){
     ReportNode* catNode = findCategory(category);
-    if (!catNode) 
-    {
+    if (!catNode){
         catNode = new ReportNode(category, true);
         root->children.push_back(catNode);
     }
     
-    for(auto child : catNode->children) 
-    {
+    for(auto child : catNode->children) {
         if(child->name == buildingName) return;
     }
 
@@ -44,61 +34,47 @@ void BuildingReport::insert(string category, string buildingName)
     catNode->children.push_back(buildingNode);
 }
 
-void BuildingReport::searchRecursive(ReportNode* node, string buildingName, vector<string>& path, bool& found) 
-{
+void BuildingReport::searchRecursive(ReportNode* node, string buildingName, vector<string>& path, bool& found){
     if (found) return;
 
-    if (!node->isCategory && node->name == buildingName) 
-    {
+    if (!node->isCategory && node->name == buildingName) {
         found = true;
         cout << "Found \"" << buildingName << "\" in category: " << path.back() << endl;
         return;
     }
 
-    if (node->isCategory && node != root) 
-    {
-        path.push_back(node->name);
-    }
+    if (node->isCategory && node != root) path.push_back(node->name);
 
-    for (auto child : node->children) 
-    {
+    for (auto child : node->children){
         searchRecursive(child, buildingName, path, found);
         if (found) return;
     }
 
-    if (node->isCategory && node != root) 
-    {
-        path.pop_back();
-    }
+    if (node->isCategory && node != root) path.pop_back();
+
 }
 
-bool BuildingReport::search(string buildingName) 
-{
+bool BuildingReport::search(string buildingName){
     vector<string> path;
     bool found = false;
     searchRecursive(root, buildingName, path, found);
-    if (!found) 
-    {
+    if (!found){
         cout << "Building \"" << buildingName << "\" not found." << endl;
     }
     return found;
 }
 
-int BuildingReport::countBuildings(string category) 
-{
+int BuildingReport::countBuildings(string category){
     ReportNode* catNode = findCategory(category);
     if (!catNode) return 0;
     return catNode->children.size();
 }
 
-string BuildingReport::findCategoryOfBuilding(string buildingName) 
-{
+string BuildingReport::findCategoryOfBuilding(string buildingName){
     if (buildingName.empty()) return "";
     
-    for (auto catNode : root->children) 
-    {
-        for (auto bNode : catNode->children) 
-        {
+    for (auto catNode : root->children){
+        for (auto bNode : catNode->children){
             if (bNode->name == buildingName) return catNode->name;
         }
     }
@@ -117,8 +93,7 @@ void BuildingReport::printGroupedReport(){
     cout << "-----------------------------\n";
 }
 
-void BuildingReport::draw(int startX, int startY) 
-{
+void BuildingReport::draw(int startX, int startY){
     int currentY = startY;
     int currentX = startX;
     int indent = 30;
@@ -133,13 +108,11 @@ void BuildingReport::draw(int startX, int startY)
 
     int maxY = 800; 
 
-    for (auto catNode : root->children) 
-    {
+    for (auto catNode : root->children){
 
         int neededHeight = 28 + (catNode->children.size() * 22) + 10;
         
-        if (currentY + neededHeight > maxY) 
-        {
+        if (currentY + neededHeight > maxY){
             currentY = startY;
             currentX += 280; 
         }
@@ -152,8 +125,7 @@ void BuildingReport::draw(int startX, int startY)
         
         currentY += 28;
 
-        for (auto buildingNode : catNode->children) 
-        {
+        for (auto buildingNode : catNode->children){
             DrawCircle(currentX + indent - 10, currentY + 10, 3, DARKBLUE);
             DrawText(buildingNode->name.c_str(), currentX + indent, currentY, itemFontSize, DARKGRAY);
             currentY += 22;
