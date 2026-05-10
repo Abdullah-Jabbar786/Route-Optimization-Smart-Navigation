@@ -5,7 +5,6 @@
 Hotel::Hotel() : graph(10) {
 
     bg = LoadTexture("src/graphics/hotel3.png");
-
     graph.addNode("Entrance");
     graph.addNode("PoolandSpaArea");
     graph.addNode("GuestRoomsWingA");
@@ -38,7 +37,7 @@ Hotel::Hotel() : graph(10) {
     graph.addEdge("EntertainmentZone", "Exit", 18);
     graph.addEdge("EntertainmentZone", "ElectronicsHub", 10);
 
-    // Set Positions
+    //Positions
     nodePos["Entrance"] = {451, 525};
     nodePos["PoolandSpaArea"] = {210, 337};
     nodePos["GuestRoomsWingA"] = {259, 239};
@@ -58,14 +57,14 @@ Hotel::~Hotel() {
 }
 
 void Hotel::update(MainZone& mz) {
-    // Exit Button Logic
+    //Exit Button Logic
     if (CheckCollisionPointRec(GetMousePosition(), exitBtnRect)) {
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
             exitClicked = true;
         }
     }
 
-    // Exit Node Delay Logic
+    //Exit Node Delay Logic
     if (exitNodeSelected) {
         exitNodeTimer += GetFrameTime();
         if (exitNodeTimer >= 5.0f) {
@@ -130,7 +129,6 @@ void Hotel::draw() {
         DrawText(name.c_str(), textX + 1, textY - 1, fontSize, WHITE);
         DrawText(name.c_str(), textX - 1, textY + 1, fontSize, WHITE);
 
-        // Main Text
         DrawText(name.c_str(), textX, textY, fontSize, BLACK);
     }
 
