@@ -140,7 +140,7 @@ void FoodCourt::draw() {
         }
     }
 
-    // Draw Info Box
+    //Draw Info Box
     if (showInfo) {
         int w = 250, h = 100;
         int x = GetScreenWidth() - w - 20, y = GetScreenHeight() - h - 20;
@@ -155,7 +155,7 @@ void FoodCourt::draw() {
         DrawText(("Time: " + tStr).c_str(), x + 10, y + 75, 22, DARKGREEN);
     }
 
-    // Draw Exit Button
+    //Draw Exit Button
     bool hover = CheckCollisionPointRec(GetMousePosition(), exitBtnRect);
     DrawRectangleRec(exitBtnRect, hover ? Fade(RED, 0.8f) : Fade(RED, 0.6f));
     DrawRectangleLinesEx(exitBtnRect, 2, WHITE);
